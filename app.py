@@ -61,14 +61,6 @@ def get_combined_text(pdf_docs, txt_files):
 def get_text_chunks(text):
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
     chunks = text_splitter.split_text(text)
-    
-    # Print the chunks to the terminal
-    print("### Text Chunks ###")
-    for i, chunk in enumerate(chunks):
-        print(f"**Chunk {i + 1}:**")
-        print(chunk)
-        print("-" * 50)  # Just to separate chunks clearly
-    
     return chunks
 
 # Store text embeddings in vector database
@@ -80,14 +72,19 @@ def get_vector_store(text_chunks):
 # Chain for question answering
 def get_conversational_chain():
     prompt_template = """   
-    Answer the question as detailed as possible from the provided context. If the answer is not in the context, say, "Answer is not available in the context."
-    
+    Answer the question as detailed as possible from the provided context. 
+    If the answer is not in the context, say, "Answer is not available in the context."
+
+    You may receive input or context in languages other than English, such as Arabic. Respond in the appropriate language.
+
     Context:
     {context}
     Question: 
     {question}
     Answer:
-    """
+"""
+
+
     model = get_openai_client()
     prompt = PromptTemplate(template=prompt_template, input_variables=["context", "question"])
     return load_qa_chain(model, chain_type="stuff", prompt=prompt)
