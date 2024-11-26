@@ -73,14 +73,17 @@ def get_vector_store(text_chunks):
 def get_conversational_chain():
     prompt_template = """   
     Answer the question as detailed as possible from the provided context. 
-    If the answer is not in the context, say, "Answer is not available in the context.
-    
+    If the answer is not in the context, say, "Answer is not available in the context."
+
+    You may receive input or context in languages other than English. Respond in the appropriate language.
+
     Context:
     {context}
     Question: 
     {question}
     Answer:
 """
+
 
     model = get_openai_client()
     prompt = PromptTemplate(template=prompt_template, input_variables=["context", "question"])
@@ -92,7 +95,7 @@ def handle_user_input(user_question):
     new_db = FAISS.load_local("faiss_index", embeddings, allow_dangerous_deserialization=True)
     docs = new_db.similarity_search(user_question)
     chain = get_conversational_chain()
-    response = chain.invoke({"input_documents": docs, "question": user_question}, return_only_outputs=True)
+    response = chain({"input_documents": docs, "question": user_question}, return_only_outputs=True)
     return response["output_text"]
 
 # Main function
