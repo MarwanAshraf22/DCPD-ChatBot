@@ -1,8 +1,8 @@
 import streamlit as st
 from langchain_community.document_loaders import PyMuPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_community.embeddings import OpenAIEmbeddings
-from langchain.chat_models import ChatOpenAI
+from langchain_openai import OpenAIEmbeddings
+from langchain_openai import ChatOpenAI
 from langchain_community.vectorstores import FAISS
 from langchain.chains.question_answering import load_qa_chain
 from langchain.prompts import PromptTemplate
@@ -31,7 +31,7 @@ api_key = os.getenv("OPENAI_API_KEY")
 
 # Initialize OpenAI client
 def get_openai_client():
-    return ChatOpenAI(model="gpt-3.5-turbo", temperature=0, openai_api_key=api_key)
+    return ChatOpenAI(model="gpt-3.5-turbo", temperature=0.1, openai_api_key=api_key)
 
 # Extract text from PDF
 def get_pdf_text(pdf_docs):
@@ -73,17 +73,14 @@ def get_vector_store(text_chunks):
 def get_conversational_chain():
     prompt_template = """   
     Answer the question as detailed as possible from the provided context. 
-    If the answer is not in the context, say, "Answer is not available in the context."
-
-    You may receive input or context in languages other than English, such as Arabic. Respond in the appropriate language.
-
+    If the answer is not in the context, say, "Answer is not available in the context.
+    
     Context:
     {context}
     Question: 
     {question}
     Answer:
 """
-
 
     model = get_openai_client()
     prompt = PromptTemplate(template=prompt_template, input_variables=["context", "question"])
@@ -95,7 +92,7 @@ def handle_user_input(user_question):
     new_db = FAISS.load_local("faiss_index", embeddings, allow_dangerous_deserialization=True)
     docs = new_db.similarity_search(user_question)
     chain = get_conversational_chain()
-    response = chain({"input_documents": docs, "question": user_question}, return_only_outputs=True)
+    response = chain.invoke({"input_documents": docs, "question": user_question}, return_only_outputs=True)
     return response["output_text"]
 
 # Main function
