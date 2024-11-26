@@ -75,8 +75,6 @@ def get_conversational_chain():
     Answer the question as detailed as possible from the provided context. 
     If the answer is not in the context, say, "Answer is not available in the context."
 
-    You may receive input or context in languages other than English. Respond in the appropriate language.
-
     Context:
     {context}
     Question: 
